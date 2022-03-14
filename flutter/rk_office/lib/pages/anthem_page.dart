@@ -12,7 +12,6 @@ class AnthemPage extends StatefulWidget{
 }
 
 class _AnthemPageState extends State<AnthemPage> {
-  TimeOfDay timeOfDay = TimeOfDay.now();
   final timeController = TextEditingController();
   BluetoothConnection? connection;
 
@@ -49,55 +48,63 @@ class _AnthemPageState extends State<AnthemPage> {
         child: CircularProgressIndicator(),
       ) : !connection!.isConnected ? const Center(
         child: Icon(Icons.error_outline_rounded),
-      ) : ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: timeController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                label: Text('Select start time'),
-                border: OutlineInputBorder(),
+      ) : Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextField(
+                controller: timeController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  label: Text('Select start time'),
+                ),
+                onTap: (){
+                  showTimePicker(
+                    builder: (context, child) => MediaQuery(
+                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                      child: child!,
+                    ),
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  ).then((value)  {
+                    if(value != null) {
+                      setState(()=> timeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value, alwaysUse24HourFormat: true,));
+                    }
+                  });
+                },
               ),
-              onTap: (){
-                showTimePicker(
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: child!,
-                  ),
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                ).then((value)  {
-                  if(value != null) {
-                    setState((){
-                      timeOfDay = value;
-                      timeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value);
-                    });
-                  }
-                });
-              },
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: OutlinedButton(
-              onPressed: (){
-                if(connection != null && connection!.isConnected){
-                  connection!.output.add(ascii.encode(
-                    jsonEncode({
-                      'data': 1,
-                      'at': '${timeOfDay.hour}:${timeOfDay.minute}:00',
-                    },),
-                  ),);
-                }
-              },
-              child: const Text('Send'),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: OutlinedButton(
+                onPressed: send,
+                child: const Text('Send'),
+              ),
             ),
-          ),
-        ],
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.0),
+              child: Divider(),
+            ),
+            const ListTile(
+              dense: true,
+              leading: Icon(Icons.error_outline),
+              title: Text('Anthem will play for 1 minute, and then other media will play.'),
+            ),
+          ],
+        ),
       ),
     );
+  }
+  void send(){
+    if(connection != null && connection!.isConnected){
+      connection!.output.add(ascii.encode(
+        jsonEncode({
+          'data': 1,
+          'at': timeController.text + ':0',
+        },),
+      ),);
+    }
   }
 }

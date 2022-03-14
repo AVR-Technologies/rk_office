@@ -12,8 +12,6 @@ class IrrigationPage extends StatefulWidget{
 }
 
 class _IrrigationPageState extends State<IrrigationPage> {
-  TimeOfDay startTimeOfDay = TimeOfDay.now();
-  TimeOfDay stopTimeOfDay = TimeOfDay.now();
   final startTimeController = TextEditingController();
   final stopTimeController = TextEditingController();
   BluetoothConnection? connection;
@@ -52,47 +50,44 @@ class _IrrigationPageState extends State<IrrigationPage> {
         child: CircularProgressIndicator(),
       ) : !connection!.isConnected ? const Center(
         child: Icon(Icons.error_outline_rounded),
-      ) : ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: startTimeController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                label: Text('Select start time'),
-                border: OutlineInputBorder()
+      ) : Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextField(
+                controller: startTimeController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                    label: Text('Select start time'),
+                    border: OutlineInputBorder()
+                ),
+                onTap: (){
+                  showTimePicker(
+                    builder: (context, child) => MediaQuery(
+                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                      child: child!,
+                    ),
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  ).then((value)  {
+                    if(value != null) {
+                      setState(()=> startTimeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value, alwaysUse24HourFormat: true,));
+                    }
+                  });
+                },
               ),
-              onTap: (){
-                showTimePicker(
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: child!,
-                  ),
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                ).then((value)  {
-                  if(value != null) {
-                    setState((){
-                      startTimeOfDay = value;
-                      startTimeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value);
-                    });
-                  }
-                });
-              },
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: stopTimeController,
-              readOnly: true,
-              decoration: const InputDecoration(
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextField(
+                controller: stopTimeController,
+                readOnly: true,
+                decoration: const InputDecoration(
                   label: Text('Select stop time'),
-                  border: OutlineInputBorder()
-              ),
-              onTap: (){
-                showTimePicker(
+                ),
+                onTap: ()=> showTimePicker(
                   builder: (context, child) => MediaQuery(
                     data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
                     child: child!,
@@ -101,34 +96,41 @@ class _IrrigationPageState extends State<IrrigationPage> {
                   initialTime: TimeOfDay.now(),
                 ).then((value)  {
                   if(value != null) {
-                    setState((){
-                      stopTimeOfDay = value;
-                      stopTimeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value);
-                    });
+                    setState(()=> stopTimeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value, alwaysUse24HourFormat: true,));
                   }
-                });
-              },
+                }),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: OutlinedButton(
-              onPressed: (){
-                if(connection != null && connection!.isConnected){
-                  connection!.output.add(ascii.encode(
-                    jsonEncode({
-                      'data': 2,
-                      'from': startTimeController.text,
-                      'to': stopTimeController.text,
-                    },),
-                  ),);
-                }
-              },
-              child: const Text('Send'),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: OutlinedButton(
+                onPressed: send,
+                child: const Text('Send'),
+              ),
             ),
-          ),
-        ],
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.0),
+              child: Divider(),
+            ),
+            const ListTile(
+              dense: true,
+              leading: Icon(Icons.error_outline),
+              title: Text('Select start and stop time for garden irrigation.'),
+            ),
+          ],
+        ),
       ),
     );
+  }
+  void send(){
+    if(connection != null && connection!.isConnected){
+      connection!.output.add(ascii.encode(
+        jsonEncode({
+          'data': 2,
+          'from': startTimeController.text + ':0',
+          'to': stopTimeController.text + ':0',
+        },),
+      ),);
+    }
   }
 }

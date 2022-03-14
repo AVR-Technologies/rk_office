@@ -37,6 +37,7 @@ class _ShutterPageState extends State<ShutterPage> {
       connection!.dispose();
     }
   }
+
   @override
   Widget build(context) {
     return Scaffold(
