@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-class AnthemPage extends StatefulWidget{
+class AnthemPage extends StatefulWidget {
   final String address;
+
   const AnthemPage({Key? key, required this.address}) : super(key: key);
 
   @override
@@ -12,6 +13,7 @@ class AnthemPage extends StatefulWidget{
 }
 
 class _AnthemPageState extends State<AnthemPage> {
+  // final oldTimeController = TextEditingController();
   final timeController = TextEditingController();
   BluetoothConnection? connection;
 
@@ -22,13 +24,30 @@ class _AnthemPageState extends State<AnthemPage> {
   }
 
   @override
-  dispose(){
+  dispose() {
     disconnect();
     super.dispose();
   }
 
   connect() async {
     connection = await BluetoothConnection.toAddress(widget.address);
+    connection!.input!.listen(
+          (event) {
+        var inputData = jsonDecode(ascii.decode(event));
+        if (inputData["data"] == 1) {
+          //reply after new settings sent
+          timeController.text = inputData['at'];
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Settings saved')));
+        } else if (inputData["data"] == 2) {
+          //get saved settings from device
+          timeController.text = inputData['at'];
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Settings read from device')));
+        }
+      },
+    );
+    connection!.output.add(ascii.encode(jsonEncode({'data': 2})));
     setState(() {});
   }
 
@@ -38,73 +57,120 @@ class _AnthemPageState extends State<AnthemPage> {
       connection!.dispose();
     }
   }
+
   @override
   Widget build(context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anthem Control'),
+        leading: Image.asset('assets/rk_logo.png'),
+        title: const Text('RK Associates - Smart Office'),
       ),
       body: connection == null ? const Center(
         child: CircularProgressIndicator(),
       ) : !connection!.isConnected ? const Center(
         child: Icon(Icons.error_outline_rounded),
-      ) : Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          children: [
-            Padding(
+      ) : Column(
+        children: [
+          AppBar(
+            // automaticallyImplyLeading: false,
+            leading: Container(),
+            shape: const Border(),
+            title: const Text('National Anthem Timer'),
+          ),
+          Expanded(
+            child: Padding(
               padding: const EdgeInsets.all(4.0),
-              child: TextField(
-                controller: timeController,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  label: Text('Select start time'),
-                ),
-                onTap: (){
-                  showTimePicker(
-                    builder: (context, child) => MediaQuery(
-                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                      child: child!,
+              child: ListView(
+                children: [
+                  // const ListTile(
+                  //   title: Text('Saved settings'),
+                  // ),
+                  // Padding(
+                  //   padding: const EdgeInsets.all(4.0),
+                  //   child: TextField(
+                  //     enabled: false,
+                  //     controller: oldTimeController,
+                  //     readOnly: true,
+                  //     decoration: const InputDecoration(
+                  //       label: Text('start time'),
+                  //     ),
+                  //   ),
+                  // ),
+                  // const Divider(color: Colors.grey, thickness: 2,),
+                  const ListTile(
+                    title: Text('Settings'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: TextField(
+                      controller: timeController,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        label: Text('start time'),
+                      ),
+                      onTap: () {
+                        showTimePicker(
+                          builder: (context, child) => MediaQuery(
+                            data: MediaQuery.of(context).copyWith(
+                                alwaysUse24HourFormat: true),
+                            child: child!,
+                          ),
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((value) {
+                          if (value != null) {
+                            setState(
+                                  () => timeController.text =
+                                  MaterialLocalizations.of(context)
+                                      .formatTimeOfDay(
+                                    value,
+                                    alwaysUse24HourFormat: true,
+                                  ),
+                            );
+                          }
+                        });
+                      },
                     ),
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  ).then((value)  {
-                    if(value != null) {
-                      setState(()=> timeController.text = MaterialLocalizations.of(context).formatTimeOfDay(value, alwaysUse24HourFormat: true,));
-                    }
-                  });
-                },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: OutlinedButton(
+                      onPressed: send,
+                      child: const Text('SAVE'),
+                    ),
+                  ),
+
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Divider(),
+                  ),
+                  const ListTile(
+                    dense: true,
+                    leading: Icon(Icons.error_outline),
+                    title: Text(
+                        'Anthem will play for 1 minute, and then other media will play.'),
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: OutlinedButton(
-                onPressed: send,
-                child: const Text('Send'),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.0),
-              child: Divider(),
-            ),
-            const ListTile(
-              dense: true,
-              leading: Icon(Icons.error_outline),
-              title: Text('Anthem will play for 1 minute, and then other media will play.'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-  void send(){
-    if(connection != null && connection!.isConnected){
-      connection!.output.add(ascii.encode(
-        jsonEncode({
-          'data': 1,
-          'at': timeController.text + ':0',
-        },),
-      ),);
+
+  void send() {
+    if (connection != null && connection!.isConnected) {
+      connection!.output.add(
+        ascii.encode(
+          jsonEncode(
+            {
+              'data': 1,
+              'at': timeController.text + ':0',
+            },
+          ),
+        ),
+      );
     }
   }
 }

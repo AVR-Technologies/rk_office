@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 import 'constants/routes.dart';
 
 void main() {
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'AVR Homes',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light().copyWith(
         appBarTheme: AppBarTheme(
@@ -35,8 +37,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       routes: Routes.routes,
-      initialRoute: Routes.homePage,
-      onGenerateRoute: Routes.routesWithAddress,
+      initialRoute: Routes.loginPage,
+      onGenerateRoute: Routes.routesWithParams,
     );
   }
 }

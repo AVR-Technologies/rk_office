@@ -38,6 +38,11 @@ struct TimeE {
     sprintf(buff, "%.2d:%.2d:%.2d", hour, minute, second);
     Serial.print(buff);
   }
+  String toString(){
+    char buff[9];
+    sprintf(buff, "%.2d:%.2d:%.2d", hour, minute, second);
+    return String(buff);
+  }
   bool isCrossed(TimeE &after) {
     char _currentTime[7];
     char _afterTime[7];

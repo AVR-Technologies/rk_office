@@ -54,14 +54,30 @@ void readData() {
     Serial.println(data);
     doc.clear();
     deserializeJson(doc, data);
-    Serial.println("new config  parsing");
-    if (doc["data"] == 1) { //timer settings
+    Serial.println("new config parsing");
+    if (doc["data"] == 1) { //save new timer settings
       startAt.from(doc["at"].as<const char*>());
       stopAt.from(startAt);
       stopAt.add(TimeE(0, 1, 0));
       
       savePrefs();
       Serial.println("new config saved");
+      
+      doc.clear();
+      doc["data"] = 1;
+      doc["at"] = startAt.toString();
+      String output = "";
+      serializeJson(doc, output);
+      SerialBT.println(output);
+      doc.clear();
+    } else if (doc["data"] == 2){ //read timer settings
+      doc.clear();
+      doc["data"] = 2;
+      doc["at"] = startAt.toString();
+      String output = "";
+      serializeJson(doc, output);
+      SerialBT.println(output);
+      doc.clear();
     }
   }
 }
@@ -77,11 +93,11 @@ void checkTimer() {
   if (currentTime.isCrossed(startAt) && !currentTime.isCrossed(stopAt) ) {
     Serial.println("started");
     digitalWrite(relay1, HIGH);
-    digitalWrite(relay2, HIGH);
+    digitalWrite(relay2, LOW);
   } else {
     Serial.println("stopped");
     digitalWrite(relay1, LOW);
-    digitalWrite(relay2, LOW);
+    digitalWrite(relay2, HIGH);
   }
 }
 void savePrefs() {

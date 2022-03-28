@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.rk_office">
    <application
-        android:label="rk_office"
+        android:label="AVR Homes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
