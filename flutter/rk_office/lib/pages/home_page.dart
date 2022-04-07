@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
       icon: Icons.grass,
       name: 'Irrigation Timer',
       path: Routes.irrigationPage,
-      address: "94:3C:C6:25:AE:F6",
+      address: "AC:67:B2:5F:9C:DA",
     ),
   ];
 
