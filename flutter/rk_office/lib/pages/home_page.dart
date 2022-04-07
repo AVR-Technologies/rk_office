@@ -15,7 +15,7 @@ class _HomePageState extends State<HomePage> {
       icon: Icons.door_front_door,
       name: 'Shutter Control',
       path: Routes.shutterPage,
-      address: "94:3C:C6:25:AE:C2",
+      address: "94:3C:C6:25:AE:F6",
     ),
     Device(
       icon: Icons.music_note,
@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
       icon: Icons.grass,
       name: 'Irrigation Timer',
       path: Routes.irrigationPage,
-      address: "94:3C:C6:25:AE:C2",
+      address: "94:3C:C6:25:AE:F6",
     ),
   ];
 
@@ -104,31 +104,33 @@ class _HomePageState extends State<HomePage> {
                 childAspectRatio: 1,
                 children: [
                   ...devices.map(
-                    (device) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(
-                            color: Colors.grey,
-                          ),
+                    (device) => Card(
+                      margin: const EdgeInsets.all(8.0),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(
+                          color: Colors.grey,
                         ),
-                        child: InkWell(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Center(
-                                child: Text(
+                      ),
+                      child: InkWell(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
                               device.name,
                               style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w400),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
                               textAlign: TextAlign.center,
-                            )),
+                            ),
                           ),
-                          onTap: () => Navigator.of(context).pushNamed(
-                            device.path,
-                            arguments: device.address,
-                          ), //todo: replace arguments with actual address
                         ),
+                        onTap: () => Navigator.of(context).pushNamed(
+                          device.path,
+                          arguments: device.address,
+                        ), //todo: replace arguments with actual address
                       ),
                     ),
                   ),
@@ -148,9 +150,10 @@ class Device {
   final String path;
   final String address;
 
-  Device(
-      {required this.icon,
-      required this.name,
-      required this.path,
-      required this.address});
+  Device({
+    required this.icon,
+    required this.name,
+    required this.path,
+    required this.address,
+  });
 }

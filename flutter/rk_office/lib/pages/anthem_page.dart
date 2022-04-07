@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -31,23 +32,29 @@ class _AnthemPageState extends State<AnthemPage> {
 
   connect() async {
     connection = await BluetoothConnection.toAddress(widget.address);
-    connection!.input!.listen(
-          (event) {
+    connection!.input!.listen((event) {
         var inputData = jsonDecode(ascii.decode(event));
-        if (inputData["data"] == 1) {
-          //reply after new settings sent
+        if (inputData["data"] == 1) { // reply after new settings sent
           timeController.text = inputData['at'];
           ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Settings saved')));
-        } else if (inputData["data"] == 2) {
-          //get saved settings from device
+              ..clearSnackBars()
+              ..showSnackBar(const SnackBar(content: Text('Settings saved')));
+        } else if (inputData["data"] == 2) { // get saved settings from device
           timeController.text = inputData['at'];
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Settings read from device')));
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(const SnackBar(content: Text('Settings read from device')));
+        } else if(inputData["data"] == 3){  // clock updated response
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(const SnackBar(content: Text('Clock updated')));
         }
       },
     );
-    connection!.output.add(ascii.encode(jsonEncode({'data': 2})));
+
+    sendClockTime();
+    sendCurrentConfigReadRequest();
+
     setState(() {});
   }
 
@@ -111,22 +118,17 @@ class _AnthemPageState extends State<AnthemPage> {
                       onTap: () {
                         showTimePicker(
                           builder: (context, child) => MediaQuery(
-                            data: MediaQuery.of(context).copyWith(
-                                alwaysUse24HourFormat: true),
+                            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true,),
                             child: child!,
                           ),
                           context: context,
                           initialTime: TimeOfDay.now(),
                         ).then((value) {
                           if (value != null) {
-                            setState(
-                                  () => timeController.text =
-                                  MaterialLocalizations.of(context)
-                                      .formatTimeOfDay(
-                                    value,
-                                    alwaysUse24HourFormat: true,
-                                  ),
-                            );
+                            setState(() => timeController.text = MaterialLocalizations.of(context).formatTimeOfDay(
+                              value,
+                              alwaysUse24HourFormat: true,
+                            ),);
                           }
                         });
                       },
@@ -135,7 +137,7 @@ class _AnthemPageState extends State<AnthemPage> {
                   Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: OutlinedButton(
-                      onPressed: send,
+                      onPressed: sendNewConfig,
                       child: const Text('SAVE'),
                     ),
                   ),
@@ -147,8 +149,7 @@ class _AnthemPageState extends State<AnthemPage> {
                   const ListTile(
                     dense: true,
                     leading: Icon(Icons.error_outline),
-                    title: Text(
-                        'Anthem will play for 1 minute, and then other media will play.'),
+                    title: Text('Anthem will play for 1 minute, and then other media will play.',),
                   ),
                 ],
               ),
@@ -159,18 +160,43 @@ class _AnthemPageState extends State<AnthemPage> {
     );
   }
 
-  void send() {
+  void sendNewConfig() {
     if (connection != null && connection!.isConnected) {
       connection!.output.add(
         ascii.encode(
-          jsonEncode(
-            {
-              'data': 1,
-              'at': timeController.text + ':0',
-            },
-          ),
+          jsonEncode({
+            'data': 1,
+            'at': timeController.text + ':0',
+          },),
         ),
       );
+    }
+  }
+  void sendClockTime(){
+    if (connection != null && connection!.isConnected) {
+      Future.delayed(
+        const Duration(seconds: 1), ()=> connection!.output.add(
+        ascii.encode(
+          jsonEncode({
+            'data': 3,
+            'time': DateFormat('yyyy:MM:dd:HH:mm:ss').format(DateTime.now()),
+          },),
+        ),
+      ),);
+    }
+  }
+  void sendCurrentConfigReadRequest(){
+
+    if (connection != null && connection!.isConnected) {
+      Future.delayed(
+        const Duration(seconds: 3), () =>
+          connection!.output.add(
+            ascii.encode(
+              jsonEncode({
+                'data': 2,
+              },),
+            ),
+          ),);
     }
   }
 }

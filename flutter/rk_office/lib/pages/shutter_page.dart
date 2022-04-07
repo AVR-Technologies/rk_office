@@ -29,6 +29,15 @@ class _ShutterPageState extends State<ShutterPage> {
 
   connect() async {
     connection = await BluetoothConnection.toAddress(widget.address);
+    connection!.input!.listen((event) {
+        var inputData = jsonDecode(ascii.decode(event));
+        if (inputData["data"] == 1) {
+          //reply after new settings sent
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(inputData['message'])));
+        }
+      },
+    );
     setState(() {});
   }
 
@@ -112,6 +121,7 @@ class _ShutterPageState extends State<ShutterPage> {
           ),
           const Spacer(),
           Card(
+            elevation: 0,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -122,20 +132,8 @@ class _ShutterPageState extends State<ShutterPage> {
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
-              onTap: () {
-                if (connection != null && connection!.isConnected) {
-                  connection!.output.add(
-                    ascii.encode(
-                      jsonEncode(
-                        {
-                          'data': 3,
-                          'on': true, //shutter on
-                        },
-                      ),
-                    ),
-                  );
-                }
-              },
+              onTapDown: (_) => shutterUp(),
+              onTap: ()=> shutterStop(),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -143,23 +141,27 @@ class _ShutterPageState extends State<ShutterPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Center(
-                        child: Icon(
-                          Icons.arrow_upward_outlined,
-                          size: 100,
-                        )),
+                      child: Icon(
+                        Icons.arrow_upward_outlined,
+                        size: 100,
+                      ),
+                    ),
                     Center(
-                        child: Text(
-                          'OPEN',
-                          style: Theme.of(context).textTheme.headline6,
-                        )),
+                      child: Text(
+                        'OPEN',
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                    ),
                     const Center(
-                        child: Text('Shutter will move upward'))
+                      child: Text('Shutter will move upward'),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
           Card(
+            elevation: 0,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -170,20 +172,8 @@ class _ShutterPageState extends State<ShutterPage> {
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
-              onTap: () {
-                if (connection != null && connection!.isConnected) {
-                  connection!.output.add(
-                    ascii.encode(
-                      jsonEncode(
-                        {
-                          'data': 3,
-                          'on': false, //shutter off
-                        },
-                      ),
-                    ),
-                  );
-                }
-              },
+              onTapDown: (_) => shutterDown(),
+              onTap: ()=> shutterStop(),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -191,17 +181,20 @@ class _ShutterPageState extends State<ShutterPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Center(
-                        child: Icon(
-                          Icons.arrow_downward_outlined,
-                          size: 100,
-                        )),
+                      child: Icon(
+                        Icons.arrow_downward_outlined,
+                        size: 100,
+                      ),
+                    ),
                     Center(
-                        child: Text(
-                          'CLOSE',
-                          style: Theme.of(context).textTheme.headline6,
-                        )),
+                      child: Text(
+                        'CLOSE',
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                    ),
                     const Center(
-                        child: Text('Shutter will move downward'))
+                      child: Text('Shutter will move downward'),
+                    ),
                   ],
                 ),
               ),
@@ -211,5 +204,50 @@ class _ShutterPageState extends State<ShutterPage> {
         ],
       ),
     );
+  }
+  
+  void shutterUp(){
+    if (connection != null && connection!.isConnected) {
+      connection!.output.add(
+        ascii.encode(
+          jsonEncode(
+            {
+              'data': 3,
+              'status': 'up', //shutter off
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  void shutterDown(){
+    if (connection != null && connection!.isConnected) {
+      connection!.output.add(
+        ascii.encode(
+          jsonEncode(
+            {
+              'data': 3,
+              'status': 'down', //shutter off
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  void shutterStop(){
+    if (connection != null && connection!.isConnected) {
+      connection!.output.add(
+        ascii.encode(
+          jsonEncode(
+            {
+              'data': 3,
+              'status': 'stop', //shutter off
+            },
+          ),
+        ),
+      );
+    }
   }
 }

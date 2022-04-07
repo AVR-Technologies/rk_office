@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rk_office/constants/routes.dart';
+import '../constants/routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
               controller: passwordController,
               decoration: const InputDecoration(
                 hintText: 'Enter Password',
-                contentPadding: EdgeInsets.all(40),
+                // contentPadding: EdgeInsets.all(40),
               ),
               textAlign: TextAlign.center,
               style: const TextStyle(

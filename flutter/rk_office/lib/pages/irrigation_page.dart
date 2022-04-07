@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -38,13 +38,20 @@ class _IrrigationPageState extends State<IrrigationPage> {
       if (inputData["data"] == 1) {
         //reply after new settings sent
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Settings saved')));
+          ..clearSnackBars()
+          ..showSnackBar(const SnackBar(content: Text('Settings saved')));
       } else if (inputData["data"] == 2) {
         //get saved settings from device
         startTimeController.text = inputData['from'];
         stopTimeController.text = inputData['to'];
+      } else if(inputData["data"] == 3){
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(const SnackBar(content: Text('Clock updated')));
       }
     });
+    Future.delayed(const Duration(seconds: 1), ()=> connection!.output.add(ascii.encode(jsonEncode({'data': 3, 'time': DateFormat('yyyy:MM:dd:HH:mm:ss').format(DateTime.now())}))));
+    Future.delayed(const Duration(seconds: 3), ()=> connection!.output.add(ascii.encode(jsonEncode({'data': 2}))));
     setState(() {});
   }
 
@@ -192,7 +199,8 @@ class _IrrigationPageState extends State<IrrigationPage> {
                     dense: true,
                     leading: Icon(Icons.error_outline),
                     title: Text(
-                        'Select start and stop time for garden irrigation.'),
+                      'Select start and stop time for garden irrigation.',
+                    ),
                   ),
                 ],
               ),
@@ -209,7 +217,7 @@ class _IrrigationPageState extends State<IrrigationPage> {
         ascii.encode(
           jsonEncode(
             {
-              'data': 2,
+              'data': 1,
               'from': startTimeController.text + ':0',
               'to': stopTimeController.text + ':0',
             },

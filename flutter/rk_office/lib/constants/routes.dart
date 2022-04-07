@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rk_office/pages/login_page.dart';
 
+import '../pages/login_page.dart';
 import '../pages/anthem_page.dart';
 import '../pages/home_page.dart';
 import '../pages/irrigation_page.dart';
