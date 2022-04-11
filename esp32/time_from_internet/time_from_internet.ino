@@ -1,4 +1,3 @@
-// https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/
 #include "WiFi.h"
 #include "time.h"
 #include "Wire.h"

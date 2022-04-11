@@ -16,6 +16,7 @@ class _HomePageState extends State<HomePage> {
       name: 'Shutter Control',
       path: Routes.shutterPage,
       address: "94:3C:C6:25:AE:F6",
+      // address: "4C:75:25:41:65:D6",
     ),
     Device(
       icon: Icons.music_note,
