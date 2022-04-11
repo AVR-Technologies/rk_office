@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'constants/routes.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -35,9 +33,9 @@ class MyApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
-      routes: Routes.routes,
       initialRoute: Routes.loginPage,
-      onGenerateRoute: Routes.routesWithParams,
+      onGenerateRoute: Routes.routesWithParams, // routes with arguments
+      routes: Routes.routes, // routes without arguments
     );
   }
 }

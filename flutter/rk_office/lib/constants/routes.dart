@@ -20,7 +20,7 @@ class Routes {
     Routes.loginPage: (_) => const LoginPage(),
   };
 
-  static Route? routesWithParams(settings) {
+  static Route? routesWithParams(RouteSettings settings) {
     switch (settings.name) {
       case Routes.irrigationPage:
         final args = settings.arguments as String;

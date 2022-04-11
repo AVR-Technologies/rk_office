@@ -37,8 +37,8 @@ class _AnthemPageState extends State<AnthemPage> {
         if (inputData["data"] == 1) { // reply after new settings sent
           timeController.text = inputData['at'];
           ScaffoldMessenger.of(context)
-              ..clearSnackBars()
-              ..showSnackBar(const SnackBar(content: Text('Settings saved')));
+            ..clearSnackBars()
+            ..showSnackBar(const SnackBar(content: Text('Settings saved')));
         } else if (inputData["data"] == 2) { // get saved settings from device
           timeController.text = inputData['at'];
           ScaffoldMessenger.of(context)
@@ -186,17 +186,15 @@ class _AnthemPageState extends State<AnthemPage> {
     }
   }
   void sendCurrentConfigReadRequest(){
-
     if (connection != null && connection!.isConnected) {
       Future.delayed(
-        const Duration(seconds: 3), () =>
-          connection!.output.add(
-            ascii.encode(
-              jsonEncode({
-                'data': 2,
-              },),
-            ),
-          ),);
+        const Duration(seconds: 3), () => connection!.output.add(
+        ascii.encode(
+          jsonEncode({
+            'data': 2,
+          },),
+        ),
+      ),);
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/routes.dart';
+import '../models/device.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -10,25 +11,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  //todo: replace arguments with actual address
+  //todo: for default bluetooth address of devices check README.md
   var devices = <Device>[
     Device(
-      icon: Icons.door_front_door,
+      address: "94:3C:C6:25:AE:F6",
       name: 'Shutter Control',
       path: Routes.shutterPage,
-      address: "94:3C:C6:25:AE:F6",
-      // address: "4C:75:25:41:65:D6",
     ),
     Device(
-      icon: Icons.music_note,
+      address: "94:3C:C6:25:AE:C2",
       name: 'National Anthem Timer',
       path: Routes.anthemPage,
-      address: "94:3C:C6:25:AE:C2",
     ),
     Device(
-      icon: Icons.grass,
+      address: "AC:67:B2:5F:9C:DA",
       name: 'Irrigation Timer',
       path: Routes.irrigationPage,
-      address: "AC:67:B2:5F:9C:DA",
     ),
   ];
 
@@ -92,7 +91,6 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           AppBar(
-            // automaticallyImplyLeading: false,
             leading: Container(),
             shape: const Border(),
             title: const Text('Dashboard'),
@@ -131,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () => Navigator.of(context).pushNamed(
                           device.path,
                           arguments: device.address,
-                        ), //todo: replace arguments with actual address
+                        ),
                       ),
                     ),
                   ),
@@ -143,18 +141,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
-
-class Device {
-  final IconData icon;
-  final String name;
-  final String path;
-  final String address;
-
-  Device({
-    required this.icon,
-    required this.name,
-    required this.path,
-    required this.address,
-  });
 }
